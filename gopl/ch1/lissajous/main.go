@@ -17,6 +17,7 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
+	"fmt"
 )
 
 //!-main
@@ -51,7 +52,18 @@ func main() {
 	if len(os.Args) > 1 && os.Args[1] == "web" {
 		//!+http
 		handler := func(w http.ResponseWriter, r *http.Request) {
-			lissajous(w, blackIndex)
+			if err := r.ParseForm(); err != nil {
+				log.Print(err)
+			}
+			colorIndex, err := strconv.Atoi(r.Form["color"][0])
+			if err != nil {
+				fmt.Fprintf(w, err.Error())
+			}
+			cycles, err := strconv.Atoi(r.Form["cycles"][0])
+				if err != nil{
+				fmt.Fprintf(w, err.Error())
+			}
+			lissajous(w, uint8(colorIndex), float64(cycles))
 		}
 		http.HandleFunc("/", handler)
 		//!-http
@@ -66,16 +78,14 @@ func main() {
 			log.Fatal(err)
 			return
 		}
-		if num 
-		lissajous(os.Stdout, uint8(num))
+		lissajous(os.Stdout, uint8(num), 5)
 	}
 
-	lissajous(os.Stdout, uint8(blackIndex))
+	lissajous(os.Stdout, uint8(blackIndex), 5)
 }
 
-func lissajous(out io.Writer, colorIndex uint8) {
+func lissajous(out io.Writer, colorIndex uint8, cycles float64) {
 	const (
-		cycles  = 5     // number of complete x oscillator revolutions
 		res     = 0.001 // angular resolution
 		size    = 100   // image canvas covers [-size..+size]
 		nframes = 64    // number of animation frames
@@ -101,3 +111,4 @@ func lissajous(out io.Writer, colorIndex uint8) {
 }
 
 //!-main
+// http://localhost:8000/?cycles=20&color=2
